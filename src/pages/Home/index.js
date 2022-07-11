@@ -13,7 +13,7 @@ import { connect } from 'react-redux';
 import {
     updateDisableDashboard
 } from '../../Store/Actions/Action';
-import { apiCallWithOutToken } from '../../Api';
+import { apiCallWithOutToken, apiCallWithToken } from '../../Api';
 import { PUBLIC_ALL_SERVICES } from '../../shared/allApiUrl';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { style } from 'styled-system';
@@ -26,6 +26,8 @@ class Home extends Component {
             store:"",
             miscellaneousList: [],
             professionalList: [],
+          technicalJobs: [],
+          miscellaneousJobs: [],
            country: '',
             city: '',
             fields: {
@@ -42,20 +44,21 @@ class Home extends Component {
 
         this.props.navigation.addListener("didFocus", () => {
             this.props.updateDisableDashboard(true);
-            this.getAllServices()
+          this.getAllServices();
+          this.getAllJobs();
         });
     }
 
 
     getAllServices = async () => {
         //console.log("before sign in===>", "inside function"); 
-        console.log("props value==>",this.props)
+        // console.log("props value==>",this.props)
         let formData = new FormData()
         formData.append('userid', this.props?.userData?.userDetails?.data?.id ? this.props.userData.userDetails.data.id :"guest")
-        console.log("formdata==>",formData)
+        // console.log("formdata==>",formData)
         await apiCallWithOutToken(PUBLIC_ALL_SERVICES, "post", formData)
             .then((res) => {
-                console.log("response home==>",res)
+                // console.log("response home==>",res)
                 this.setState({
                     miscellaneous: res.data.data.Miscellaneous,
                     professional: res.data.data.Technical,
@@ -67,14 +70,38 @@ class Home extends Component {
 
     };
    
+  getAllJobs = async () => {
+    console.log("FUCTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNn")
+    //console.log("before sign in===>", "inside function"); 
+    // console.log("props value==>", this.props)
+    let formData = new FormData()
+    formData.append('user_id', this.props?.userData?.userDetails?.data?.id ? this.props.userData.userDetails.data.id : "guest"
+    )
+    formData.append('job_type', '');
+    formData.append('popular', '');
+    console.log("formdatagetAllJobs==>", formData)
+    await apiCallWithToken('freelancer_list/', "post", formData)
+      .then((res) => {
+        console.log("response homeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee==>", res)
+        this.setState({
+          miscellaneousJobs: res.data.data.miscellaneous_list,
+          technicalJobs: res.data.data.popular_list,
+        })
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+  };
+
 
     handleChange(value, name) {
-        console.log("value ==>",value)
-        console.log("name ==>",name)
+        // console.log("value ==>",value)
+        // console.log("name ==>",name)
         let fields = this.state.fields;
         fields[name] = value;
         this.setState({ fields });
-        console.log("fields==>", this.state.fields)
+       // console.log("fields==>", this.state.fields)
       }
 
     onSearch = () => {
@@ -120,7 +147,8 @@ class Home extends Component {
     }
 
     render() {
-        const { miscellaneous, professional } = this.state
+      console.log("this.props.userData?.userDetails", this.state.technicalJobs)
+      const { miscellaneous, professional } = this.state
         return (
             <NativeBaseProvider style={CommonStyles.wrapper}>
                 {/* <StatusBar backgroundColor={"#f9f9f9"} barStyle="dark-content" translucent /> */}
@@ -151,7 +179,7 @@ class Home extends Component {
                                     renderDescription={row => row.description} // custom description render
                                     onPress={(data, details = null) => {
                                         // 'details' is provided when fetchDetails = true
-                                        console.log("details===>",details)
+                                        // console.log("details===>",details)
                                         this.handleChange(details.formatted_address, 'address');
                                     }}
                                     // onPress={() => {
@@ -275,66 +303,184 @@ class Home extends Component {
                                     </Select>
                                 </View>
                             </View>
+                  {this.props.userData?.userDetails?.data?.user_type === 'Client' ?
+                    <>
+                      <View style={[CommonStyles.productrow]}>
+                        <View style={[CommonStyles.rowbetween, { marginBottom: 15 }]}>
+                          <Text style={CommonStyles.heading}>Popular Professional </Text>
+                          <Text>Service Provider</Text>
+                          {this.props.userData?.userDetails?.accessToken &&
+                            this.props.userData?.userDetails?.accessToken.length ?
+                            <TouchableOpacity>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity onPress={() => Alert.alert('You need to login first')}>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                          }
+                        </View>
+                        <ScrollView horizontal={true} style={{ marginLeft: -8 }}>
+                          {professional && professional.length ? professional.map((professionalData, index) => {
+                            return (
+                              <View style={CommonStyles.colbox} >
+                                <View style={[CommonStyles.card, { width: 220 }, styles.hcardcontent]} key={index}>
+                                  <Image source={professionalData.profile_image ? { uri: professionalData.profile_image } : require('../../assets/images/list1.jpg')} resizeMode="cover" style={CommonStyles.cardthumb} />
+                                  <View style={[CommonStyles.cardcontent,]}>
+                                    <Text style={CommonStyles.pheading}>{professionalData.first_name}{" "}{professionalData.last_name} </Text>
+                                    <Text style={[CommonStyles.para,]} numberOfLines={3} ellipsizeMode="tail">{professionalData.description} </Text>
+                                    <Text style={CommonStyles.pricetext}>Starting at  <Text style={{ fontWeight: 'bold', color: '#242933' }}>{professionalData.hourly_rate ? professionalData.hourly_rate : 0}</Text></Text>
 
-                            <View style={[CommonStyles.productrow]}>
-                                <View style={[CommonStyles.rowbetween, { marginBottom: 15 }]}>
-                                    <Text style={CommonStyles.heading}>Popular Professional Services</Text>
-                                    <TouchableOpacity>
-                                        <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                                  </View>
+                                  {this.props.userData?.userDetails?.accessToken.length ?
+                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() =>
+                                      this.props.navigation.navigate(
+                                        'FreelancerProfileDetails',
+                                        { freelancerId: professionalData.user_id },
+                                      )
+                                    }>
+                                      <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
                                     </TouchableOpacity>
-                                </View>
-                                <ScrollView horizontal={true} style={{ marginLeft: -8 }}>
-                                    {professional && professional.length ? professional.map((professionalData, index) => {
-                                        return (
-                                            <View style={CommonStyles.colbox} >
-                                                <View style={[CommonStyles.card, { width: 220}, styles.hcardcontent]} key={index}>
-                                                    <Image source={professionalData.profile_image ? { uri: professionalData.profile_image } : require('../../assets/images/list1.jpg')} resizeMode="cover" style={CommonStyles.cardthumb} />
-                                                    <View style={[CommonStyles.cardcontent,]}>
-                                                        <Text style={CommonStyles.pheading}>{professionalData.first_name}{" "}{professionalData.last_name} </Text>
-                                                        <Text style={[CommonStyles.para, ]} numberOfLines={3} ellipsizeMode="tail">{professionalData.description} </Text>
-                                                        <Text style={CommonStyles.pricetext}>Starting at  <Text style={{ fontWeight: 'bold', color: '#242933' }}>{professionalData.hourly_rate ? professionalData.hourly_rate : 0}</Text></Text>
-                                                        
-                                                    </View>
-                                                    {this.props.userData?.userDetails?.accessToken.length ?
-                                                        <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() =>
-                                                            this.props.navigation.navigate(
-                                                              'FreelancerProfileDetails',
-                                                              {freelancerId: professionalData.user_id},
-                                                            )
-                                                          }>
-                                                            <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
-                                                        </TouchableOpacity>
-                                                        :
-                                                        <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() => Alert.alert('You need to login first')}>
-                                                            <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
-                                                        </TouchableOpacity>
-                                    }
-                                                </View>
-                                            </View>
-                                        )
-                                    }) :
-                                        <Text style={CommonStyles.notfoundtext}> No Professional Service Provider found</Text>}
-
-                                </ScrollView>
-
-                            </View>
-                            <View style={[CommonStyles.productrow]}>
-                                <View style={[CommonStyles.rowbetween, { marginBottom: 15 }]}>
-                                    <Text style={CommonStyles.heading}>Popular miscellaneous Services</Text>
-                                    <TouchableOpacity>
-                                        <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                                    :
+                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() => Alert.alert('You need to login first')}>
+                                      <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
                                     </TouchableOpacity>
+                                  }
                                 </View>
-                                <ScrollView horizontal={true} style={{ marginLeft: -8 }}>
-                                    {miscellaneous && miscellaneous.length ? miscellaneous.map((miscellaneousData, index) => {
-                                        return (
-                                            <View style={CommonStyles.colbox}>
+                              </View>
+                            )
+                          }) :
+                            <Text style={CommonStyles.notfoundtext}> No Professional Service Provider found</Text>}
+
+                        </ScrollView>
+
+                      </View>
+                      <View style={[CommonStyles.productrow]}>
+                        <View style={[CommonStyles.rowbetween, { marginBottom: 15 }]}>
+                          <Text style={CommonStyles.heading}>Popular miscellaneous</Text>
+                          <Text>Service Provider</Text>
+                          {this.props.userData?.userDetails?.accessToken &&
+                            this.props.userData?.userDetails?.accessToken.length ?
+                            <TouchableOpacity>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity onPress={() => Alert.alert('You need to login first')}>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                          }
+                        </View>
+                        <ScrollView horizontal={true} style={{ marginLeft: -8 }}>
+                          {miscellaneous && miscellaneous.length ? miscellaneous.map((miscellaneousData, index) => {
+                            return (
+                              <View style={CommonStyles.colbox}>
+                                <View style={[CommonStyles.card, { width: 220 }, styles.hcardcontent]}>
+                                  <Image source={miscellaneousData.profile_image ? { uri: miscellaneousData.profile_image } : require('../../assets/images/cleaning.jpg')} resizeMode="cover" style={CommonStyles.cardthumb} />
+                                  <View style={[CommonStyles.cardcontent,]}>
+                                    <Text style={CommonStyles.pheading}>{miscellaneousData.first_name}{" "}{miscellaneousData.last_name}</Text>
+                                    <Text style={[CommonStyles.para,]} numberOfLines={3} ellipsizeMode="tail">{miscellaneousData.description}</Text>
+                                    <Text style={CommonStyles.pricetext}>Starting at  <Text style={{ fontWeight: 'bold', color: '#242933' }}>${miscellaneousData.hourly_rate ? miscellaneousData.hourly_rate : 0}</Text></Text>
+
+                                  </View>
+                                  {this.props.userData?.userDetails?.accessToken.length ?
+                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() =>
+                                      this.props.navigation.navigate(
+                                        'FreelancerProfileDetails',
+                                        { freelancerId: miscellaneousData.user_id },
+                                      )
+                                    }>
+                                      <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
+                                    </TouchableOpacity>
+                                    :
+                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() => Alert.alert('You need to login first')}>
+                                      <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
+                                    </TouchableOpacity>
+                                  }
+                                </View>
+                              </View>
+                            )
+                          }) :
+                            <Text style={CommonStyles.notfoundtext}> No miscellaneous Service Provider found</Text>}
+                        </ScrollView>
+
+                      </View>
+                    </>
+                    :
+                    <>
+                      <View style={[CommonStyles.productrow]}>
+                        <View style={[CommonStyles.rowbetween, { marginBottom: 15 }]}>
+                          <Text style={CommonStyles.heading}>Popular Technical Jobs</Text>
+                          {this.props.userData?.userDetails?.accessToken &&
+                            this.props.userData?.userDetails?.accessToken.length ?
+                            <TouchableOpacity>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity onPress={() => Alert.alert('You need to login first')}>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                          }
+                        </View>
+                        <ScrollView horizontal={true} style={{ marginLeft: -8 }}>
+                          {this.state.technicalJobs && this.state.technicalJobs.length ? this.state.technicalJobs.map((technicalJobData, index) => {
+                            console.log("TECHNICAL JOB+_", technicalJobData)
+                            return (
+                              <View style={CommonStyles.colbox} >
+                                <View style={[CommonStyles.card, { width: 220 }, styles.hcardcontent]} key={index}>
+
+                                  <View style={[CommonStyles.cardcontent,]}>
+                                    <Text style={CommonStyles.pheading}>{technicalJobData.title}</Text>
+                                    <Text style={[CommonStyles.para,]} numberOfLines={3} ellipsizeMode="tail">{technicalJobData.description} </Text>
+                                    <Text style={CommonStyles.pricetext}>Experience Level<Text style={{ fontWeight: 'bold', color: '#242933' }}>{technicalJobData.exp_level}</Text></Text>
+
+                                  </View>
+                                  {this.props.userData?.userDetails?.accessToken.length ?
+                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() =>
+                                      this.props.navigation.navigate(
+                                        'FreelancerProfileDetails',
+                                        { freelancerId: professionalData.user_id },
+                                      )
+                                    }>
+                                      <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
+                                    </TouchableOpacity>
+                                    :
+                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm, styles.cbtn]} onPress={() => Alert.alert('You need to login first')}>
+                                      <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Explore</Text>
+                                    </TouchableOpacity>
+                                  }
+                                </View>
+                              </View>
+                            )
+                          }) :
+                            <Text style={CommonStyles.notfoundtext}> No Technical jobs found</Text>}
+
+                        </ScrollView>
+
+                      </View>
+                      <View style={[CommonStyles.productrow]}>
+                        <View style={[CommonStyles.rowbetween, { marginBottom: 15 }]}>
+                          <Text style={CommonStyles.heading}>Popular Miscellaneous Jobs</Text>
+                          {this.props.userData?.userDetails?.accessToken &&
+                            this.props.userData?.userDetails?.accessToken.length ?
+                            <TouchableOpacity>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity onPress={() => Alert.alert('You need to login first')}>
+                              <Text style={CommonStyles.hedinglink}>Explore All</Text>
+                            </TouchableOpacity>
+                          }
+                        </View>
+                        <ScrollView horizontal={true} style={{ marginLeft: -8 }}>
+                          {this.state.miscellaneousJobs && this.state.miscellaneousJobs.length ? this.state.miscellaneousJobs.map((miscellaneousData, index) => {
+                            return (
+                              <View style={CommonStyles.colbox}>
                                                 <View style={[CommonStyles.card, { width: 220}, styles.hcardcontent]}>
-                                                    <Image source={miscellaneousData.profile_image ? { uri: miscellaneousData.profile_image } : require('../../assets/images/cleaning.jpg')} resizeMode="cover" style={CommonStyles.cardthumb} />
+
                                                     <View style={[CommonStyles.cardcontent, ]}>
-                                                        <Text style={CommonStyles.pheading}>{miscellaneousData.first_name}{" "}{miscellaneousData.last_name}</Text>
+                                                <Text style={CommonStyles.pheading}>{miscellaneousData.title}</Text>
                                                         <Text style={[CommonStyles.para, ]} numberOfLines={3} ellipsizeMode="tail">{miscellaneousData.description}</Text>
-                                                        <Text style={CommonStyles.pricetext}>Starting at  <Text style={{ fontWeight: 'bold', color: '#242933' }}>${miscellaneousData.hourly_rate ? miscellaneousData.hourly_rate : 0}</Text></Text>
+                                                <Text style={CommonStyles.pricetext}>Experience level  <Text style={{ fontWeight: 'bold', color: '#242933' }}>${miscellaneousData.exp_level}</Text></Text>
                                                        
                                                     </View>
                                                     {this.props.userData?.userDetails?.accessToken.length ?
@@ -355,10 +501,13 @@ class Home extends Component {
                                             </View>
                                         )
                                     }) :
-                                        <Text style={CommonStyles.notfoundtext}> No miscellaneous Service Provider found</Text>}
+                            <Text style={CommonStyles.notfoundtext}> No miscellaneous jobs found</Text>}
                                 </ScrollView>
 
                             </View>
+                    </>
+
+                  }
 
                             <ImageBackground source={require('../../assets/images/learn-more.jpg')} resizeMode="cover" style={styles.morebg} >
                                 <Text style={styles.bannertext} numberOfLines={5}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</Text>
