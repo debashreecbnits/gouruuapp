@@ -7,6 +7,7 @@ export default class AboutUs extends Component {
         return (
             <SafeAreaView style={CommonStyles.wrapper}> 
                 <View style={CommonStyles.headerwrap}>
+                    
                     <View style={CommonStyles.Tlefticon}>
                         <TouchableOpacity onPress={()=>this.props.navigation.goBack()}>
                             <Image source={require('../../assets/images/left-arrow.png')} resizeMode="contain" style={CommonStyles.ticon} />
