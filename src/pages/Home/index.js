@@ -28,6 +28,7 @@ class Home extends Component {
             professionalList: [],
           technicalJobs: [],
           miscellaneousJobs: [],
+          newsblogsData: [],
            country: '',
             city: '',
             fields: {
@@ -46,6 +47,7 @@ class Home extends Component {
             this.props.updateDisableDashboard(true);
           this.getAllServices();
           this.getAllJobs();
+          this.getNewsBlogs();
         });
     }
 
@@ -94,6 +96,29 @@ class Home extends Component {
 
   };
 
+  getNewsBlogs = async () => {
+    console.log("FUCTIONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNn")
+    //console.log("before sign in===>", "inside function"); 
+    // console.log("props value==>", this.props)
+    // let formData = new FormData()
+    // formData.append('adminid', this.props?.userData?.userDetails?.data?.id ? this.props.userData.userDetails.data.id : "guest"
+    // )
+    // formData.append('search', '');
+    // formData.append('limit', 0);
+    // formData.append('page_no', 0);
+    // console.log("formdatagetAllNewsBlogs==>", formData)
+    await apiCallWithOutToken('get_news_blogs_list/', "get")
+      .then((res) => {
+        console.log("response Newsssss==>", res)
+        this.setState({
+          newsblogsData: res.data.data
+        })
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+  };
 
     handleChange(value, name) {
         // console.log("value ==>",value)
@@ -524,16 +549,19 @@ class Home extends Component {
                                     </View>
                                 </View>
                             </ImageBackground>
+
                             <View style={{ paddingBottom: 15, marginRight: -15 }}>
                                 <Text style={styles.headingtop}>News & Blogs</Text>
                                 <ScrollView horizontal>
+                      {this.state.newsblogsData && this.state.newsblogsData.length ? this.state.newsblogsData.map((newsData, index) => {
+                        return (
                                     <View style={[CommonStyles.card, styles.newscard]}>
                                         <Image source={require('../../assets/images/blog1.jpg')} resizeMode="cover" style={styles.cardthumb} />
-                                        <View style={styles.date}>
-                                            <Text style={styles.datetext}>02Dec 2021</Text>
-                                        </View>
+                        {/* <View style={styles.date}>
+                              <Text style={styles.datetext}>{newsData.createdAt}</Text>
+                                        </View> */}
                                         <View style={styles.cardcontent}>
-                                            <Text style={CommonStyles.pheading}>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</Text>
+                          <Text style={CommonStyles.pheading}>{newsData.title}</Text>
                                             <View style={CommonStyles.tagswrap}>
                                                 <TouchableOpacity style={CommonStyles.filltags}>
                                                     <Text style={CommonStyles.tagtext}>Trending</Text>
@@ -542,7 +570,7 @@ class Home extends Component {
                                                     <Text style={CommonStyles.tagtext}>Blog</Text>
                                                 </TouchableOpacity>
                                             </View>
-                                            <Text style={CommonStyles.para}>when an unknown printer took a galley of type and scrambled it to make a type specimen book. </Text>
+                          <Text style={CommonStyles.para}>{newsData.summary}</Text>
 
                                             <View style={CommonStyles.row}>
                                                 <View style={CommonStyles.col50}>
@@ -560,100 +588,9 @@ class Home extends Component {
                                                 </View>
                                             </View>
                                         </View>
-                                    </View>
-                                    <View style={[CommonStyles.card, styles.newscard]}>
-                                        <Image source={require('../../assets/images/blog2.jpg')} resizeMode="cover" style={styles.cardthumb} />
-                                        <View style={styles.date}>
-                                            <Text style={styles.datetext}>02Dec 2021</Text>
-                                        </View>
-                                        <View style={styles.cardcontent}>
-                                            <Text style={CommonStyles.pheading}>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</Text>
-                                            <View style={CommonStyles.tagswrap}>
-                                                <TouchableOpacity style={CommonStyles.filltags}>
-                                                    <Text style={CommonStyles.tagtext}>Trending</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={CommonStyles.filltags}>
-                                                    <Text style={CommonStyles.tagtext}>Blog</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                            <Text style={CommonStyles.para}>when an unknown printer took a galley of type and scrambled it to make a type specimen book. </Text>
-
-                                            <View style={CommonStyles.row}>
-                                                <View style={CommonStyles.col50}>
-                                                    <View style={{ alignItems: 'center', flexDirection: 'row', paddingTop: 18 }}>
-                                                        <Text style={styles.grtext2}>CHRISTOPHER RYAN</Text>
-                                                    </View>
-                                                </View>
-                                                <View style={[CommonStyles.col50, { paddingLeft: 25 }]}>
-                                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm]}>
-                                                        <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Read More</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View style={[CommonStyles.card, styles.newscard]}>
-                                        <Image source={require('../../assets/images/blog1.jpg')} resizeMode="cover" style={styles.cardthumb} />
-                                        <View style={styles.date}>
-                                            <Text style={styles.datetext}>02Dec 2021</Text>
-                                        </View>
-                                        <View style={styles.cardcontent}>
-                                            <Text style={CommonStyles.pheading}>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</Text>
-                                            <View style={CommonStyles.tagswrap}>
-                                                <TouchableOpacity style={CommonStyles.filltags}>
-                                                    <Text style={CommonStyles.tagtext}>Trending</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={CommonStyles.filltags}>
-                                                    <Text style={CommonStyles.tagtext}>Blog</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                            <Text style={CommonStyles.para}>when an unknown printer took a galley of type and scrambled it to make a type specimen book. </Text>
-
-                                            <View style={CommonStyles.row}>
-                                                <View style={CommonStyles.col50}>
-                                                    <View style={{ alignItems: 'center', flexDirection: 'row', paddingTop: 18 }}>
-                                                        <Text style={styles.grtext2}>CHRISTOPHER RYAN</Text>
-                                                    </View>
-                                                </View>
-                                                <View style={[CommonStyles.col50, { paddingLeft: 25 }]}>
-                                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm]} onPress={() => this.props.navigation.navigate('ServiceDetails')}>
-                                                        <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Read More</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View style={[CommonStyles.card, styles.newscard]}>
-                                        <Image source={require('../../assets/images/blog2.jpg')} resizeMode="cover" style={styles.cardthumb} />
-                                        <View style={styles.date}>
-                                            <Text style={styles.datetext}>02Dec 2021</Text>
-                                        </View>
-                                        <View style={styles.cardcontent}>
-                                            <Text style={CommonStyles.pheading}>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</Text>
-                                            <View style={CommonStyles.tagswrap}>
-                                                <TouchableOpacity style={CommonStyles.filltags}>
-                                                    <Text style={CommonStyles.tagtext}>Trending</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={CommonStyles.filltags}>
-                                                    <Text style={CommonStyles.tagtext}>Blog</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                            <Text style={CommonStyles.para}>when an unknown printer took a galley of type and scrambled it to make a type specimen book. </Text>
-
-                                            <View style={CommonStyles.row}>
-                                                <View style={CommonStyles.col50}>
-                                                    <View style={{ alignItems: 'center', flexDirection: 'row', paddingTop: 18 }}>
-                                                        <Text style={styles.grtext2}>CHRISTOPHER RYAN</Text>
-                                                    </View>
-                                                </View>
-                                                <View style={[CommonStyles.col50, { paddingLeft: 25 }]}>
-                                                    <TouchableOpacity style={[CommonStyles.primarybutton, CommonStyles.btnsm]}>
-                                                        <Text style={[CommonStyles.btntext, CommonStyles.btnsmtext]}>Read More</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </View>
+                      </View>
+                                  )
+                                }) : <View><Text>NO NEWS FOUND</Text></View>}
                                 </ScrollView>
                             </View>
 
